@@ -1,0 +1,21 @@
+id,name,age,email,salary,department,hire_date,is_active
+1,Alice Johnson,34,alice@example.com,75000,Engineering,2019-03-15,True
+2,Bob Smith,28,bob@example.com,62000,Marketing,2020-07-01,True
+3,Charlie Brown,45,charlie@example.com,95000,Engineering,2015-11-20,True
+4,Diana Ross,31,,68000,Sales,2021-01-10,True
+5,Eve Davis,29,eve@example.com,58000,Marketing,2020-09-14,False
+6,Frank Miller,52,frank@example.com,105000,Engineering,2012-06-03,True
+7,Grace Lee,38,grace@example.com,,HR,2018-04-22,True
+8,Henry Wilson,41,henry@example.com,87000,Sales,2017-08-30,True
+9,Iris Chen,26,iris@example.com,54000,Marketing,2022-02-14,True
+10,Jack Taylor,35,jack@example.com,72000,Engineering,2019-10-01,True
+11,Karen White,44,karen@example.com,91000,HR,2016-05-18,True
+12,Leo Martinez,33,leo@example.com,67000,Sales,2020-03-25,False
+13,Mona Patel,29,mona@example.com,59000,Marketing,2021-06-07,True
+14,Nathan Kim,47,nathan@example.com,98000,Engineering,2014-09-12,True
+15,Olivia Brown,36,,71000,Sales,2018-12-01,True
+16,Paul Anderson,30,paul@example.com,63000,HR,2021-08-19,True
+17,Quinn Roberts,42,quinn@example.com,88000,Engineering,2016-02-28,True
+18,Rachel Green,27,rachel@example.com,55000,Marketing,2022-05-10,True
+19,Sam Thompson,39,sam@example.com,82000,Sales,2017-11-15,True
+20,Tina Nguyen,34,tina@example.com,74000,Engineering,2019-07-22,True

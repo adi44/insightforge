@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+  margin: 0;
+  background: #f8fafc;
+  color: #1e293b;
+}

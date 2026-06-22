@@ -1,0 +1,17 @@
+autogen-agentchat
+autogen-ext[anthropic]
+
+pandas
+numpy
+
+plotly
+matplotlib
+
+fastapi
+uvicorn
+
+python-dotenv
+
+pydantic
+
+openpyxl
