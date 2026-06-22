@@ -1,10 +1,12 @@
 import { useState, useCallback } from "react";
-import { Upload as UploadIcon, FileSpreadsheet, X, Play } from "lucide-react";
+import { Upload as UploadIcon, FileSpreadsheet, X, Play, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function Upload() {
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -16,11 +18,24 @@ export default function Upload() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0];
-    if (selected) setFile(selected);
+    if (selected) { setFile(selected); setError(null); }
   };
 
-  const handleAnalyze = () => {
-    navigate("/analysis", { state: { fileName: file?.name } });
+  const handleAnalyze = async () => {
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/datasets/upload", { method: "POST", body: formData });
+      if (!res.ok) throw new Error(`Upload failed: ${res.statusText}`);
+      const data = await res.json();
+      navigate("/analysis", { state: { fileName: data.filename } });
+    } catch (err) {
+      setError(String(err));
+      setUploading(false);
+    }
   };
 
   return (
@@ -72,18 +87,33 @@ export default function Upload() {
             </div>
             <button
               onClick={() => setFile(null)}
-              className="p-1 text-slate-400 hover:text-slate-600"
+              disabled={uploading}
+              className="p-1 text-slate-400 hover:text-slate-600 disabled:opacity-50"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
+          {error && (
+            <p className="mt-3 text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+          )}
+
           <button
             onClick={handleAnalyze}
-            className="mt-4 w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-2.5 px-4 rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors"
+            disabled={uploading}
+            className="mt-4 w-full flex items-center justify-center gap-2 bg-indigo-600 text-white py-2.5 px-4 rounded-lg font-medium text-sm hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            <Play className="w-4 h-4" />
-            Run AI Analysis
+            {uploading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4" />
+                Run AI Analysis
+              </>
+            )}
           </button>
         </div>
       )}

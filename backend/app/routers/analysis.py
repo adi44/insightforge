@@ -37,6 +37,7 @@ async def run_analysis(req: AnalysisRequest):
     quality_result = analyze_data_quality(dataset)
     eda_result = run_eda(dataset)
     charts = generate_visualizations(dataset)
+    chart_urls = [f"/static/{Path(c).name}" for c in charts]
     insights = [
         f"Dataset has {quality_result.total_records} records across {quality_result.total_columns} columns",
         f"Missing values: {quality_result.missing_values} ({quality_result.missing_values / max(quality_result.total_records * quality_result.total_columns, 1) * 100:.1f}%)",
@@ -47,7 +48,7 @@ async def run_analysis(req: AnalysisRequest):
     return {
         "quality": quality_result.model_dump(),
         "eda": eda_result.model_dump(),
-        "charts": charts,
+        "charts": chart_urls,
         "insights": insights,
         "report": report,
     }
