@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import Analysis from "./pages/Analysis";
 import Chat from "./pages/Chat";
+import Telemetry from "./pages/Telemetry";
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
         <Route path="/upload" element={<Upload />} />
         <Route path="/analysis" element={<Analysis />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/telemetry" element={<Telemetry />} />
       </Route>
     </Routes>
   );

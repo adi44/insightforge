@@ -25,6 +25,15 @@ def build_schema_context(df: pd.DataFrame) -> str:
     return "\n".join(lines)
 
 
+class AgentResult:
+    def __init__(self, content: str, prompt_tokens: int, completion_tokens: int, tool_calls: int):
+        self.content = content
+        self.prompt_tokens = prompt_tokens
+        self.completion_tokens = completion_tokens
+        self.total_tokens = prompt_tokens + completion_tokens
+        self.tool_calls = tool_calls
+
+
 async def run(
     question: str,
     df: pd.DataFrame,
@@ -32,7 +41,7 @@ async def run(
     client: AsyncOpenAI,
     model: str,
     filename: str,
-) -> str:
+) -> AgentResult:
     schema = build_schema_context(df)
     system = (
         f'You are InsightForge AI, an expert data analyst. The user has uploaded "{filename}".\n\n'
@@ -48,6 +57,10 @@ async def run(
             messages.append({"role": msg["role"], "content": msg["content"]})
     messages.append({"role": "user", "content": question})
 
+    total_prompt_tokens = 0
+    total_completion_tokens = 0
+    total_tool_calls = 0
+
     for _ in range(3):
         response = await client.chat.completions.create(
             model=model,
@@ -58,10 +71,14 @@ async def run(
             temperature=0.2,
         )
         choice = response.choices[0]
+        if response.usage:
+            total_prompt_tokens += response.usage.prompt_tokens
+            total_completion_tokens += response.usage.completion_tokens
 
         if choice.finish_reason == "tool_calls":
             messages.append(choice.message)
             for tc in choice.message.tool_calls:
+                total_tool_calls += 1
                 try:
                     code = json.loads(tc.function.arguments)["code"]
                 except Exception:
@@ -73,6 +90,16 @@ async def run(
                     "content": output,
                 })
         else:
-            return choice.message.content or ""
+            return AgentResult(
+                content=choice.message.content or "",
+                prompt_tokens=total_prompt_tokens,
+                completion_tokens=total_completion_tokens,
+                tool_calls=total_tool_calls,
+            )
 
-    return "Could not produce an answer after multiple attempts."
+    return AgentResult(
+        content="Could not produce an answer after multiple attempts.",
+        prompt_tokens=total_prompt_tokens,
+        completion_tokens=total_completion_tokens,
+        tool_calls=total_tool_calls,
+    )

@@ -1,11 +1,12 @@
 import { Outlet, NavLink } from "react-router-dom";
-import { BarChart3, Upload, LayoutDashboard, MessageSquare } from "lucide-react";
+import { BarChart3, Upload, LayoutDashboard, MessageSquare, Activity } from "lucide-react";
 
 const navItems = [
   { to: "/", icon: LayoutDashboard, label: "Dashboard" },
   { to: "/chat", icon: MessageSquare, label: "Chat" },
   { to: "/upload", icon: Upload, label: "Upload" },
   { to: "/analysis", icon: BarChart3, label: "Analysis" },
+  { to: "/telemetry", icon: Activity, label: "Telemetry" },
 ];
 
 export default function Layout() {
