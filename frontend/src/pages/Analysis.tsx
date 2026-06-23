@@ -10,7 +10,10 @@ import {
   Image,
   FileText,
   AlertCircle,
+  Download,
 } from "lucide-react";
+import { pdf } from "@react-pdf/renderer";
+import { ReportPDF } from "../components/ReportPDF";
 
 type AgentStatus = "pending" | "running" | "complete";
 
@@ -20,6 +23,17 @@ interface AgentStep {
   description: string;
   icon: React.ElementType;
   status: AgentStatus;
+}
+
+interface SummaryStats {
+  count: number;
+  mean: number;
+  std: number;
+  min: number;
+  max: number;
+  "25%": number;
+  "50%": number;
+  "75%": number;
 }
 
 interface AnalysisResult {
@@ -33,7 +47,9 @@ interface AnalysisResult {
   eda: {
     numeric_columns: string[];
     categorical_columns: string[];
+    summary_statistics: Record<string, SummaryStats>;
   };
+  charts: string[];
   insights: string[];
   report: string;
 }
@@ -121,6 +137,7 @@ export default function Analysis() {
   }, [fileName]);
 
   const allComplete = steps.every((s) => s.status === "complete");
+  const [downloading, setDownloading] = useState(false);
 
   const qualityScore = result
     ? Math.round(
@@ -129,6 +146,34 @@ export default function Analysis() {
           100
       )
     : null;
+
+  const handleDownload = async () => {
+    if (!result) return;
+    setDownloading(true);
+    try {
+      const chartImages = await Promise.all(
+        result.charts.map(async (url) => {
+          const res = await fetch(`${url}`);
+          const blob = await res.blob();
+          return new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(blob);
+          });
+        })
+      );
+      const blob = await pdf(
+        <ReportPDF fileName={fileName} result={result} chartImages={chartImages} />
+      ).toBlob();
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `insightforge-${fileName.replace(".csv", "")}-report.pdf`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <div className="p-8 max-w-3xl mx-auto">
@@ -173,14 +218,28 @@ export default function Analysis() {
       {allComplete && result && (
         <>
           <div className="mt-6 bg-green-50 border border-green-200 rounded-xl p-5">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-green-600" />
-              <div>
-                <p className="text-sm font-semibold text-green-900">Analysis Complete</p>
-                <p className="text-xs text-green-700 mt-0.5">
-                  All 5 agents finished successfully. Report ready for review.
-                </p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-5 h-5 text-green-600" />
+                <div>
+                  <p className="text-sm font-semibold text-green-900">Analysis Complete</p>
+                  <p className="text-xs text-green-700 mt-0.5">
+                    All 5 agents finished successfully. Report ready for review.
+                  </p>
+                </div>
               </div>
+              <button
+                onClick={handleDownload}
+                disabled={downloading}
+                className="flex items-center gap-2 bg-indigo-600 text-white text-xs font-medium px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              >
+                {downloading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Download className="w-3.5 h-3.5" />
+                )}
+                {downloading ? "Generating PDF…" : "Download PDF Report"}
+              </button>
             </div>
           </div>
 
@@ -251,7 +310,7 @@ export default function Analysis() {
                         {name} distribution
                       </p>
                       <img
-                        src={`http://localhost:8001${url}`}
+                        src={`${url}`}
                         alt={`${name} histogram`}
                         className="w-full rounded-lg border border-slate-100"
                       />

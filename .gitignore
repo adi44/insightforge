@@ -19,3 +19,7 @@ node_modules/
 # OS
 .DS_Store
 Thumbs.db
+
+# Generated runtime artifacts
+backend/visualizations/*.png
+backend/visualizations/*.jpg
